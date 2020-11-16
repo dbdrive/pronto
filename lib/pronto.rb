@@ -1,8 +1,5 @@
 require 'rugged'
-require 'octokit'
-require 'gitlab'
 require 'forwardable'
-require 'httparty'
 require 'rainbow'
 
 require 'pronto/error'
@@ -12,9 +9,6 @@ require 'pronto/gem_names'
 require 'pronto/logger'
 require 'pronto/config_file'
 require 'pronto/config'
-
-require 'pronto/clients/bitbucket_client'
-require 'pronto/clients/bitbucket_server_client'
 
 require 'pronto/git/repository'
 require 'pronto/git/patches'
@@ -28,10 +22,6 @@ require 'pronto/status'
 require 'pronto/runner'
 require 'pronto/runners'
 require 'pronto/client'
-require 'pronto/github'
-require 'pronto/gitlab'
-require 'pronto/bitbucket'
-require 'pronto/bitbucket_server'
 
 require 'pronto/formatter/colorizable'
 require 'pronto/formatter/base'
@@ -40,19 +30,51 @@ require 'pronto/formatter/json_formatter'
 require 'pronto/formatter/git_formatter'
 require 'pronto/formatter/commit_formatter'
 require 'pronto/formatter/pull_request_formatter'
-require 'pronto/formatter/github_formatter'
-require 'pronto/formatter/github_status_formatter'
-require 'pronto/formatter/github_combined_status_formatter'
-require 'pronto/formatter/github_pull_request_formatter'
-require 'pronto/formatter/github_pull_request_review_formatter'
-require 'pronto/formatter/gitlab_formatter'
-require 'pronto/formatter/gitlab_merge_request_review_formatter'
-require 'pronto/formatter/bitbucket_formatter'
-require 'pronto/formatter/bitbucket_pull_request_formatter'
-require 'pronto/formatter/bitbucket_server_pull_request_formatter'
 require 'pronto/formatter/checkstyle_formatter'
 require 'pronto/formatter/null_formatter'
 require 'pronto/formatter/formatter'
+
+if ENV['PRONTO_GITHUB_ACCESS_TOKEN'] || defined? RSpec
+  begin
+    require 'octokit'
+  rescue LoadError
+    abort "ERROR: If you want to use the GitHub integration, you need to " +
+          "add the 'octokit' gem to your Gemfile"
+  end
+  require 'pronto/github'
+  require 'pronto/formatter/github_formatter'
+  require 'pronto/formatter/github_status_formatter'
+  require 'pronto/formatter/github_combined_status_formatter'
+  require 'pronto/formatter/github_pull_request_formatter'
+  require 'pronto/formatter/github_pull_request_review_formatter'
+end
+if ENV['PRONTO_GITLAB_API_PRIVATE_TOKEN'] || defined? RSpec
+  begin
+    require 'gitlab'
+  rescue LoadError
+    abort "ERROR: If you want to use the GitLab integration, you need to " +
+          "add the 'gitlab' gem to your Gemfile"
+  end
+  require 'httparty'
+  require 'pronto/gitlab'
+  require 'pronto/formatter/gitlab_formatter'
+  require 'pronto/formatter/gitlab_merge_request_review_formatter'
+end
+if ENV['PRONTO_BITBUCKET_USERNAME'] || defined? RSpec
+  begin
+    require 'httparty'
+  rescue LoadError
+    abort "ERROR: If you want to use the BitBucket integration, you need to " +
+          "add the 'httparty' gem to your Gemfile"
+  end
+  require 'pronto/clients/bitbucket_client'
+  require 'pronto/clients/bitbucket_server_client'
+  require 'pronto/bitbucket'
+  require 'pronto/bitbucket_server'
+  require 'pronto/formatter/bitbucket_formatter'
+  require 'pronto/formatter/bitbucket_pull_request_formatter'
+  require 'pronto/formatter/bitbucket_server_pull_request_formatter'
+end
 
 module Pronto
   def self.run(commit = 'master', repo_path = '.',
