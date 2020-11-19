@@ -7,7 +7,11 @@ module Pronto
     end
 
     def to_s
-      "[#{sha}] #{path}:#{position} - #{body}"
+      if sha || path || position
+        "[#{sha}] #{path}:#{position} - #{body}"
+      else
+        body
+      end
     end
   end
 end
