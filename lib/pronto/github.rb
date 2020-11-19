@@ -34,6 +34,11 @@ module Pronto
                                    comment.path, nil, comment.position)
     end
 
+    def create_issue_comment(comment)
+      @config.logger.log("Creating issue comment on PR #{pull_id}")
+      client.add_comment(slug, pull_id, comment.body)
+    end
+
     def create_pull_comment(comment)
       if comment.path && comment.position
         @config.logger.log("Creating pull request comment on #{pull_id}")
@@ -41,7 +46,7 @@ module Pronto
                                    pull_sha || comment.sha,
                                    comment.path, comment.position)
       else
-        create_commit_comment(comment)
+        create_issue_comment(comment)
       end
     end
 
