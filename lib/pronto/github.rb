@@ -64,10 +64,12 @@ module Pronto
     private
 
     def create_pull_request_review(comments)
+      line_comments, review_comments = comments
+        .partition { |comment| comment.path && comment.position }
       options = {
         event: @config.github_review_type,
         accept: 'application/vnd.github.v3.diff+json', # https://developer.github.com/v3/pulls/reviews/#create-a-pull-request-review
-        comments: comments.map do |comment|
+        comments: line_comments.map do |comment|
           {
             path:     comment.path,
             position: comment.position,
@@ -75,6 +77,8 @@ module Pronto
           }
         end
       }
+      options[:body] = review_comments.join("\n") unless review_comments.empty?
+
       client.create_pull_request_review(slug, pull_id, options)
     end
 
